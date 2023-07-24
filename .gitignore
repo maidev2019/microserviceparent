@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+iban-service/src/main/java/com/maidev/ibanservice/.DS_Store
