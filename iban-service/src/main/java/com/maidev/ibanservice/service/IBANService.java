@@ -1,12 +1,16 @@
 package com.maidev.ibanservice.service;
 
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.springframework.stereotype.Service;
+
 import com.maidev.ibanservice.model.Iban;
 
+@Service
 public class IBANService {
     private class CountryInfo {
         private String isoCode;
@@ -101,7 +105,7 @@ public class IBANService {
     }
 
     public boolean validateIBAN(String iban) {
-        String countryCode = iban.substring(0, 2);
+       String countryCode = iban.substring(0, 2);
         int IBAN_length = iban.length();
 
         CountryInfo countryInfo = countries.values().stream()
@@ -115,10 +119,10 @@ public class IBANService {
 
         String numericPart = iban.substring(4) + iban.substring(0, 4);
         numericPart = replaceChars(numericPart);
-        long numericValue = Long.parseLong(numericPart);
+        BigInteger numericValue = new BigInteger(numericPart);
 
         // Perform modulo-97 check
-        if (numericValue % 97 != 1) {
+        if (numericValue.mod(BigInteger.valueOf(97)).intValue() != 1) {
             return false;
         }
 
