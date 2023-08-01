@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriBuilder;
 
 import com.maidev.loan.dto.AccountRequest;
 import com.maidev.loan.dto.AccountResponse;
@@ -34,12 +36,27 @@ public class LoanService {
     private final AddressRepository addressRepository; 
     private final ApplicantRepository applicantRepository; 
     private final AccountRepository accountRepository;
+    private final WebClient webClient;
+    
     public void createLoanRequest(LoanRequest loanRequest){
         
-       
+        
         Address address = getAddress(loanRequest);        
         Applicant applicant = getApplicant(loanRequest);
         Account account = getAccount(loanRequest);
+        // Call iban-service
+        // Check Iban if it is valide. if not then throw an exception
+        Boolean result = webClient
+        .get()
+        .uri("http://localhost:8082", uribuilder -> uribuilder.pathSegment("iban","validate","{ibannumber}").build(account.getIban()))        
+        .retrieve()
+        .bodyToMono(Boolean.class)
+        .block();
+
+        if(!result){
+            throw new IbanInvalidException("Given Iban is not valide. Please type in a valide Iban.");
+        }
+
         Loan loan = buildLoan(loanRequest, address, applicant, account);
 
         // Call bank-service 
